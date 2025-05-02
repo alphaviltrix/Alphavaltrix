@@ -1,0 +1,235 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+            font-family: 'Arial', sans-serif;
+        }
+        .glow {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+        #deposit {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+    <!-- Header -->
+    <header class="p-6 bg-gray-900 bg-opacity-50 sticky top-0 z-10">
+        <nav class="flex justify-between items-center max-w-6xl mx-auto">
+            <h1 class="text-3xl font-bold">InvestX</h1>
+            <div class="space-x-4">
+                <a href="#home" class="hover:text-purple-300">Home</a>
+                <a href="#packages" class="hover:text-purple-300">Packages</a>
+                <a href="#withdraw" class="hover:text-purple-300">Withdraw</a>
+                <a href="#login" class="hover:text-purple-300">Login</a>
+                <a href="#signup" class="hover:text-purple-300">Signup</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="py-20 text-center">
+        <h2 class="text-5xl font-extrabold mb-4">Grow Your Wealth with InvestX</h2>
+        <p class="text-lg mb-8 max-w-2xl mx-auto">Invest in our exclusive packages and earn up to 15% monthly returns. Start your journey today!</p>
+        <a href="#packages" class="bg-purple-600 text-white px-6 py-3 rounded-full hover:bg-purple-700 hover-scale">Explore Packages</a>
+    </section>
+
+    <!-- Packages Section -->
+    <section id="packages" class="py-20 max-w-6xl mx-auto">
+        <h2 class="text-4xl font-bold text-center mb-12">Our Investment Packages</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+            <!-- Silver Package -->
+            <div class="bg-gray-800 p-6 rounded-lg glow hover-scale">
+                <h3 class="text-2xl font-semibold mb-4">Silver</h3>
+                <p class="text-lg mb-2">Investment: $500 - $1000</p>
+                <p class="text-lg mb-4">Monthly Return: 10%</p>
+                <p class="text-sm mb-4 text-gray-300">Perfect for beginners looking to start their investment journey with steady returns.</p>
+                <button class="bg-purple-600 w-full py-2 rounded hover:bg-purple-700 select-package">Select Package</button>
+            </div>
+            <!-- Gold Package -->
+            <div class="bg-gray-800 p-6 rounded-lg glow hover-scale">
+                <h3 class="text-2xl font-semibold mb-4">Gold</h3>
+                <p class="text-lg mb-2">Investment: $1250 - $2500</p>
+                <p class="text-lg mb-4">Monthly Return: 10%</p>
+                <p class="text-sm mb-4 text-gray-300">Ideal for growing your wealth with higher investments and consistent profits.</p>
+                <button class="bg-purple-600 w-full py-2 rounded hover:bg-purple-700 select-package">Select Package</button>
+            </div>
+            <!-- Diamond Package -->
+            <div class="bg-gray-800 p-6 rounded-lg glow hover-scale">
+                <h3 class="text-2xl font-semibold mb-4">Diamond</h3>
+                <p class="text-lg mb-2">Investment: $2750 - $3500</p>
+                <p class="text-lg mb-4">Monthly Return: 10%</p>
+                <p class="text-sm mb-4 text-gray-300">Designed for serious investors aiming for substantial returns.</p>
+                <button class="bg-purple-600 w-full py-2 rounded hover:bg-purple-700 select-package">Select Package</button>
+            </div>
+            <!-- Alpha Package -->
+            <div class="bg-gray-800 p-6 rounded-lg glow hover-scale">
+                <h3 class="text-2xl font-semibold mb-4">Alpha</h3>
+                <p class="text-lg mb-2">Investment: $5000+</p>
+                <p class="text-lg mb-4">Monthly Return: 15%</p>
+                <p class="text-sm mb-4 text-gray-300">Ultimate package for elite investors seeking maximum growth.</p>
+                <button class="bg-purple-600 w-full py-2 rounded hover:bg-purple-700 select-package">Select Package</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deposit Section -->
+    <section id="deposit" class="py-20 max-w-4xl mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-12">Deposit Funds</h2>
+        <div class="bg-gray-800 p-8 rounded-lg glow">
+            <p class="text-lg mb-4">Scan the QR code or copy the address below to deposit funds via Binance.</p>
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <img src="https://via.placeholder.com/150" alt="Binance QR Code" class="w-32 h-32">
+                <div>
+                    <p class="text-lg mb-2">Binance Address:</p>
+                    <input type="text" value="YOUR_BINANCE_ADDRESS_HERE" readonly class="w-full p-2 bg-gray-700 rounded text-white">
+                    <button onclick="alert('Address copied!')" class="mt-2 bg-purple-600 px-4 py-2 rounded hover:bg-purple-700">Copy Address</button>
+                </div>
+            </div>
+            <div class="mt-6">
+                <label class="text-lg">Enter Deposit Amount ($):</label>
+                <input type="number" min="500" class="w-full p-2 mt-2 bg-gray-700 rounded text-white" placeholder="Minimum $500">
+                <button class="mt-4 bg-purple-600 w-full py-2 rounded hover:bg-purple-700">Submit Deposit</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Withdrawal Section -->
+    <section id="withdraw" class="py-20 max-w-4xl mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-12">Withdraw Funds</h2>
+        <div class="bg-gray-800 p-8 rounded-lg glow">
+            <form>
+                <div class="mb-4">
+                    <label class="text-lg">Withdrawal Amount ($):</label>
+                    <input type="number" min="1" class="w-full p-2 mt-2 bg-gray-700 rounded text-white" placeholder="Enter amount">
+                </div>
+                <div class="mb-4">
+                    <label class="text-lg">Binance Address:</label>
+                    <input type="text" class="w-full p-2 mt-2 bg-gray-700 rounded text-white" placeholder="Enter your Binance address">
+                </div>
+                <button type="button" class="bg-purple-600 w-full py-2 rounded hover:bg-purple-700">Submit Withdrawal</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Login Section -->
+    <section id="login" class="py-20 max-w-md mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-12">Login</h2>
+        <div class="bg-gray-800 p-8 rounded-lg glow">
+            <form>
+                <div class="mb-4">
+                    <label class="text-lg">Email:</label>
+                    <input type="email" class="w-full p-2 mt-2 bg-gray-700 rounded text-white" placeholder="Enter your email">
+                </div>
+                <div class="mb-4">
+                    <label class="text-lg">Password:</label>
+                    <input type="password" class="w-full p-2 mt-2 bg-gray-700 rounded text-white" placeholder="Enter your password">
+                </div>
+                <button type="button" class="bg-purple-600 w-full py-2 rounded hover:bg-purple-700">Login</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Signup Section -->
+    <section id="signup" class="py-20 max-w-md mx-auto px-4">
+        <h2 class="text-4xl font-bold text-center mb-12">Signup</h2>
+        <div class="bg-gray-800 p-8 rounded-lg glow">
+            <form>
+                <div class="mb-4">
+                    <label class="text-lg">Full Name:</label>
+                    <input type="text" class="w-full p-2 mt-2 bg-gray-700 rounded text-white" placeholder="Enter your full name">
+                </div>
+                <div class="mb-4">
+                    <label class="text-lg">Email:</label>
+                    <input type="email" class="w-full p-2 mt-2 bg-gray-700 rounded text-white" placeholder="Enter your email">
+                </div>
+                <div class="mb-4">
+                    <label class="text-lg">Password:</label>
+                    <input type="password" class="w-full p-2 mt-2 bg-gray-700 rounded text-white" placeholder="Create a password">
+                </div>
+                <button type="button" class="bg-purple-600 w-full py-2 rounded hover:bg-purple-700">Signup</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-6 bg-gray-900 bg-opacity-50 text-center">
+        <p>© 2025 InvestX. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Show deposit section when a package is selected
+        document.querySelectorAll('.select-package').forEach(button => {
+            button.addEventListener('click', () => {
+                document.getElementById('deposit').style.display = 'block';
+                document.getElementById('deposit').scrollIntoView({ behavior: 'smooth' });
+                alert('Package selected! Please deposit funds to proceed.');
+            });
+        });
+
+        // Other button interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', () => {
+                if (button.textContent.includes('Submit Deposit')) {
+                    alert('Deposit request submitted! Awaiting confirmation.');
+                } else if (button.textContent.includes('Submit Withdrawal')) {
+                    alert('Withdrawal request submitted! Processing soon.');
+                } else if (button.textContent.includes('Login')) {
+                    alert('Login functionality coming soon!');
+                } else if (button.textContent.includes('Signup')) {
+                    alert('Signup functionality coming soon!');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
